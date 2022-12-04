@@ -87,3 +87,8 @@ func TestCopyV2(t *testing.T) {
 		})
 	}
 }
+
+func TestPipeExample(t *testing.T) {
+	err := PipeExample()
+	assert.NoError(t, err)
+}
