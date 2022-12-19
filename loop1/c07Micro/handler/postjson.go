@@ -2,15 +2,28 @@ package handler
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"net/http"
 )
 
-func GreetingHandler(w http.ResponseWriter, r *http.Request) {
+func GreetingJsonHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
+	var req GreetingRequest
+	//defer r.Body.Close()
+	data, err := ioutil.ReadAll(r.Body)
+	_ = r.Body.Close()
+	if err != nil {
+		return
+	}
+	err = json.Unmarshal(data, &req)
+	if err != nil {
+		return
+	}
+
 	var gr GreetingResponse
 	if err := r.ParseForm(); err != nil {
 		gr.Payload.Error = "bad request"
@@ -19,8 +32,8 @@ func GreetingHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	name := r.FormValue("name")
-	greeting := r.FormValue("greeting")
+	name := req.Name
+	greeting := req.Greeting
 
 	w.WriteHeader(http.StatusOK)
 	gr.Successful = true
