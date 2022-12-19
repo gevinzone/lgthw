@@ -1,0 +1,15 @@
+package main
+
+import (
+	"github.com/gevinzone/lgthw/loop1/c07Micro/handler"
+	"net/http"
+)
+
+func main() {
+	http.HandleFunc("/name", handler.HelloHandler)
+	http.HandleFunc("/greeting", handler.GreetingHandler)
+	err := http.ListenAndServe(":8080", nil)
+	if err != nil {
+		panic(err)
+	}
+}
