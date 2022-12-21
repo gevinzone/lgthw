@@ -25,13 +25,6 @@ func GreetingJsonHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var gr GreetingResponse
-	if err := r.ParseForm(); err != nil {
-		gr.Payload.Error = "bad request"
-		if payload, err := json.Marshal(gr); err == nil {
-			w.Write(payload)
-			return
-		}
-	}
 	name := req.Name
 	greeting := req.Greeting
 
