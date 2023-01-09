@@ -6,4 +6,6 @@ func main() {
 	encoding.Base64Example()
 	_ = encoding.Base64ExampleEncoderDecoder()
 	_ = encoding.GobExample()
+	_ = encoding.JsonEncoderDecoderExample()
+	_ = encoding.JsonMarshalUnMarshalExample()
 }
