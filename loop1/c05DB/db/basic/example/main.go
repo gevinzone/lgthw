@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/gevinzone/lgthw/loop1/c07DB/db/basic"
+	"github.com/gevinzone/lgthw/loop1/c05DB/db/basic"
 )
 
 func main() {
