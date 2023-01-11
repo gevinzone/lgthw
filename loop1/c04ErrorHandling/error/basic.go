@@ -18,13 +18,7 @@ func DemoBasicError() {
 	err := errors.New("this is a quick and easy way to create an error")
 	fmt.Println("err: ", err)
 
-	// %w 用于wrap error
-	err1 := fmt.Errorf("some wrapped error: %w", err)
-	fmt.Println("err1: ", err1)
-	fmt.Println("err1 is err? ", errors.Is(err1, err))
-	err0 := errors.Unwrap(err1)
-	fmt.Println("unwrap err1 to err0:", err0)
-	fmt.Println("err0 == err? ", errors.Is(err0, err), err0 == err)
+	DemoWrapError(err)
 
 	err = ValueError
 	fmt.Println("value error: ", err)
@@ -32,12 +26,13 @@ func DemoBasicError() {
 	var err2 error
 	err2 = TypedError{err}
 	target := TypedError{err}
-	fmt.Println("typed error: ", err2)
+	fmt.Println("TypedError{err} is a typed error, its ValueError value: ", err2)
 	switch err2.(type) {
 	case TypedError:
-		fmt.Println("typed error: ", err2)
+		fmt.Println("err2 is a typed error")
 	default:
-		fmt.Println("unknown error: ", err2)
+		fmt.Println("err2 is an unknown error")
 	}
 	fmt.Println("err2 is target? ", errors.Is(err2, target))
+	fmt.Println("err2 == target? ", err2 == target)
 }
