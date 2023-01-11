@@ -8,4 +8,6 @@ func main() {
 	_ = encoding.GobExample()
 	_ = encoding.JsonEncoderDecoderExample()
 	_ = encoding.JsonMarshalUnMarshalExample()
+	_ = encoding.YamlEncoderDecoderExample()
+	_ = encoding.YamlMarshalUnMarshalExample()
 }
