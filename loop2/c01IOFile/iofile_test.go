@@ -3,6 +3,8 @@ package c01IOFile
 import (
 	"github.com/stretchr/testify/assert"
 	"io"
+	"os"
+	"strings"
 	"testing"
 )
 
@@ -47,4 +49,18 @@ func getFromReader(r io.Reader) (string, error) {
 		return "", err
 	}
 	return string(bs), nil
+}
+
+func TestCopy(t *testing.T) {
+	s := "This is a testing string\n"
+	r := strings.NewReader(s)
+	written, err := Copy(r, os.Stdout)
+	assert.NoError(t, err)
+	assert.Equal(t, r.Size(), written)
+
+	_, err = r.Seek(0, 0)
+	assert.NoError(t, err)
+	written, err = CopyV2(r, os.Stdout)
+	assert.NoError(t, err)
+	assert.Equal(t, r.Size(), written)
 }
