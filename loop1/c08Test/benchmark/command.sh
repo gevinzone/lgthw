@@ -1,0 +1,1 @@
+go test -bench=^BenchmarkExample$ -benchtime=1000x -benchmem -cpu=2,3,4 .
