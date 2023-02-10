@@ -78,6 +78,56 @@ func TestRedisCache_Set(t *testing.T) {
 }
 
 func TestRedisCache_Get(t *testing.T) {
+	testCases := []struct {
+		name    string
+		key     string
+		wantVal string
+		wantErr error
+		mock    func(ctrl *gomock.Controller) redis.Cmdable
+	}{
+		{
+			name:    "normal",
+			key:     "key1",
+			wantVal: "value1",
+			mock: func(ctrl *gomock.Controller) redis.Cmdable {
+				cmd := mocks.NewMockCmdable(ctrl)
+				str := redis.NewStringCmd(context.Background())
+				str.SetVal("value1")
+				cmd.EXPECT().
+					Get(gomock.Any(), "key1").
+					Return(str)
+				return cmd
+			},
+		},
+		{
+			name:    "timeout",
+			key:     "key1",
+			wantVal: "value1",
+			mock: func(ctrl *gomock.Controller) redis.Cmdable {
+				cmd := mocks.NewMockCmdable(ctrl)
+				str := redis.NewStringCmd(context.Background())
+				str.SetErr(context.DeadlineExceeded)
+				cmd.EXPECT().
+					Get(gomock.Any(), "key1").
+					Return(str)
+				return cmd
+			},
+			wantErr: context.DeadlineExceeded,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			cache := NewRedisCache(tc.mock(ctrl))
+			value, err := cache.Get(context.Background(), tc.key)
+			assert.Equal(t, tc.wantErr, err)
+			if err != nil {
+				return
+			}
+			assert.Equal(t, tc.wantVal, value)
+		})
+	}
 }
 
 func TestRedisCache_Delete(t *testing.T) {
