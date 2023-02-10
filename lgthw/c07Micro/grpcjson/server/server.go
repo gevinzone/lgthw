@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/gevinzone/lgthw/loop1/c07Micro/grpcjson/internal"
-	"github.com/gevinzone/lgthw/loop1/c07Micro/grpcjson/keyvalue/gen"
+	"github.com/gevinzone/lgthw/lgthw/c07Micro/grpcjson/internal"
+	"github.com/gevinzone/lgthw/lgthw/c07Micro/grpcjson/keyvalue/gen"
 	"google.golang.org/grpc"
 	"net"
 )

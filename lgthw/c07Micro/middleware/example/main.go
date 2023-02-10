@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/gevinzone/lgthw/loop1/c07Micro/middleware"
+	"github.com/gevinzone/lgthw/lgthw/c07Micro/middleware"
 	"log"
 	"net/http"
 	"os"

@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"github.com/gevinzone/lgthw/loop1/c06WebClient/oauth/basic"
+	"github.com/gevinzone/lgthw/lgthw/c06WebClient/oauth/basic"
 )
 
 func main() {

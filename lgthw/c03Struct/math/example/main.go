@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/gevinzone/lgthw/loop1/c03Struct/math"
+	"github.com/gevinzone/lgthw/lgthw/c03Struct/math"
 )
 
 func main() {

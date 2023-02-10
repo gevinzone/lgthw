@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/gevinzone/lgthw/loop1/c07Micro/grpc/proto/gen"
+	"github.com/gevinzone/lgthw/lgthw/c07Micro/grpc/proto/gen"
 	"google.golang.org/grpc"
 	"net"
 )

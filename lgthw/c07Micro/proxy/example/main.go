@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/gevinzone/lgthw/loop1/c07Micro/proxy"
+	"github.com/gevinzone/lgthw/lgthw/c07Micro/proxy"
 	"net/http"
 )
 

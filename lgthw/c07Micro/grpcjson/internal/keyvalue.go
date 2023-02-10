@@ -2,7 +2,7 @@ package internal
 
 import (
 	"context"
-	"github.com/gevinzone/lgthw/loop1/c07Micro/grpcjson/keyvalue/gen"
+	"github.com/gevinzone/lgthw/lgthw/c07Micro/grpcjson/keyvalue/gen"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"sync"

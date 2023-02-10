@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/gevinzone/lgthw/loop1/c07Micro/handlerclass/closurehandler"
-	"github.com/gevinzone/lgthw/loop1/c07Micro/handlerclass/handler"
+	"github.com/gevinzone/lgthw/lgthw/c07Micro/handlerclass/closurehandler"
+	"github.com/gevinzone/lgthw/lgthw/c07Micro/handlerclass/handler"
 	"net/http"
 )
 

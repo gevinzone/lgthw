@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/gevinzone/lgthw/loop1/c07Micro/validation"
+	"github.com/gevinzone/lgthw/lgthw/c07Micro/validation"
 	"net/http"
 )
 

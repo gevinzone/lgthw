@@ -1,6 +1,6 @@
 package main
 
-import "github.com/gevinzone/lgthw/loop1/c03Struct/json"
+import "github.com/gevinzone/lgthw/lgthw/c03Struct/json"
 
 func main() {
 	//_ = json.BaseEncoding()

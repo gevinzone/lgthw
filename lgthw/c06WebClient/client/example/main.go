@@ -1,6 +1,6 @@
 package main
 
-import "github.com/gevinzone/lgthw/loop1/c06WebClient/client"
+import "github.com/gevinzone/lgthw/lgthw/c06WebClient/client"
 
 func main() {
 	if err := client.DefaultGet("https://www.baidu.com/"); err != nil {

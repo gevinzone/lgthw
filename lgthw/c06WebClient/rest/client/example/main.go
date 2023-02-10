@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/gevinzone/lgthw/loop1/c06WebClient/rest/client"
+	"github.com/gevinzone/lgthw/lgthw/c06WebClient/rest/client"
 	"strings"
 )
 

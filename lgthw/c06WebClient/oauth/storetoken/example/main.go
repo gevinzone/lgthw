@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
-	"github.com/gevinzone/lgthw/loop1/c06WebClient/oauth/storetoken"
-	"github.com/gevinzone/lgthw/loop1/c06WebClient/oauth/storetoken/storage"
+	"github.com/gevinzone/lgthw/lgthw/c06WebClient/oauth/storetoken"
+	"github.com/gevinzone/lgthw/lgthw/c06WebClient/oauth/storetoken/storage"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/github"
 	"io"
