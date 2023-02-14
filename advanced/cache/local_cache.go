@@ -31,6 +31,7 @@ type BuildInCache struct {
 	data        map[string]*item
 	onEvicted   func(key string, val any)
 	closeSignal chan struct{}
+	closeOnce   sync.Once
 }
 
 func NewBuildInCache(interval time.Duration, opts ...BuildInCacheOption) *BuildInCache {
@@ -148,6 +149,14 @@ func (b *BuildInCache) LoadAndDelete(ctx context.Context, key string) (any, erro
 	}
 	b.delete(key)
 	return itm.val, nil
+}
+
+func (b *BuildInCache) Close() error {
+	b.closeOnce.Do(func() {
+		b.closeSignal <- struct{}{}
+		close(b.closeSignal)
+	})
+	return nil
 }
 
 type item struct {
