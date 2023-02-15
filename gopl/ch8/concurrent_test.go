@@ -32,3 +32,14 @@ func TestRunEchoServer(t *testing.T) {
 		t.Error(err)
 	}
 }
+func TestRunEchoClientEClient(t *testing.T) {
+	go func() {
+		err := RunEchoServerE()
+		if err != nil {
+			t.Error(err)
+		}
+	}()
+	time.Sleep(time.Second * 2)
+	err := RunEchoClientE()
+	t.Log(err)
+}

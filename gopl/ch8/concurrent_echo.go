@@ -11,7 +11,20 @@ import (
 	"time"
 )
 
+type handleFunc func(net.Conn)
+
+var msg = "Hello, World"
+var msgSize = len([]rune(msg))
+
 func RunEchoServer() error {
+	return RunEchoServerBase(handleEchoConn)
+}
+
+func RunEchoServerE() error {
+	return RunEchoServerBase(handleEchoConnE)
+}
+
+func RunEchoServerBase(handle handleFunc) error {
 	listener, err := net.Listen("tcp", ":8000")
 	if err != nil {
 		return err
@@ -23,30 +36,32 @@ func RunEchoServer() error {
 				fmt.Println("unexpected error: ", err)
 			}
 		}
-		go handleEchoConn(conn)
+		go handle(conn)
 	}
 }
 
 func handleEchoConn(conn net.Conn) {
 	defer conn.Close()
-	// 这样没法在输入流中读数据
-	//bs, err := io.ReadAll(conn)
-	//if err != nil {
-	//	fmt.Println("unexpected error: ", err)
-	//	return
-	//}
-	//if bs == nil {
-	//	fmt.Println("no message found...")
-	//	return
-	//}
-	//fmt.Println(string(bs))
-	//echo(conn, string(bs), time.Second)
-
 	scanner := bufio.NewScanner(conn)
 	for scanner.Scan() {
 		fmt.Println(scanner.Text())
 		echo(conn, scanner.Text(), time.Second)
 	}
+}
+
+func handleEchoConnE(conn net.Conn) {
+	defer conn.Close()
+	// 这样没法在输入流中读数据
+	//bs, err := io.ReadAll(conn)
+	bs := make([]byte, msgSize)
+	_, err := conn.Read(bs)
+	if err != nil {
+		fmt.Println("unexpected error: ", err)
+		return
+	}
+	fmt.Println("received msg:", string(bs))
+	echoE(conn, string(bs))
+
 }
 
 func echo(conn net.Conn, text string, t time.Duration) {
@@ -76,6 +91,18 @@ func echo(conn net.Conn, text string, t time.Duration) {
 	}
 }
 
+func echoE(conn net.Conn, text string) {
+	if _, err := fmt.Fprintf(conn, "\t%s\n", strings.ToUpper(text)); err != nil {
+		return
+	}
+	if _, err := fmt.Fprintf(conn, "\t%s\n", text); err != nil {
+		return
+	}
+	if _, err := fmt.Fprintf(conn, "\t%s\n", strings.ToLower(text)); err != nil {
+		return
+	}
+}
+
 func RunEchoClient() (err error) {
 	var conn net.Conn
 	if conn, err = net.Dial("tcp", ":8000"); err != nil {
@@ -83,6 +110,22 @@ func RunEchoClient() (err error) {
 	}
 	go copyData(os.Stdout, conn)
 	copyData(conn, os.Stdin)
+	return conn.Close()
+}
+
+func RunEchoClientE() (err error) {
+	var conn net.Conn
+	if conn, err = net.Dial("tcp", ":8000"); err != nil {
+		return err
+	}
+	_, err = conn.Write([]byte(msg))
+	time.Sleep(time.Second * 2)
+	bs := make([]byte, (msgSize+2)*3)
+	_, err = conn.Read(bs)
+	fmt.Println(string(bs))
+	if err != nil {
+		return err
+	}
 	return conn.Close()
 }
 
