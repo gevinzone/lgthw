@@ -86,6 +86,25 @@ func RunEchoClient() (err error) {
 	return conn.Close()
 }
 
+func RunEchoClient2() (err error) {
+	var conn net.Conn
+	if conn, err = net.Dial("tcp", ":8000"); err != nil {
+		return err
+	}
+	done := make(chan struct{})
+	go func() {
+		copyData(os.Stdout, conn)
+		fmt.Println("done")
+		done <- struct{}{}
+	}()
+	copyData(conn, os.Stdin)
+	c := conn.(*net.TCPConn)
+	//conn.Close()
+	c.CloseWrite()
+	<-done
+	return nil
+}
+
 func copyData(dst io.Writer, src io.Reader) {
 	if _, err := io.Copy(dst, src); err != nil {
 		fmt.Println("unexpected error: ", err)

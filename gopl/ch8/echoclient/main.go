@@ -6,7 +6,7 @@ import (
 
 //!+
 func main() {
-	err := ch8.RunEchoClient()
+	err := ch8.RunEchoClient2()
 	if err != nil {
 		panic(err)
 	}
