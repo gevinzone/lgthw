@@ -25,3 +25,10 @@ func TestRunClient2(t *testing.T) {
 	err := RunClient2(d)
 	t.Log(err)
 }
+
+func TestRunEchoServer(t *testing.T) {
+	err := RunEchoServer()
+	if err != nil {
+		t.Error(err)
+	}
+}
