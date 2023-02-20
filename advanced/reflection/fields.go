@@ -9,6 +9,7 @@ var (
 	errNotSupportedKind = errors.New("not supported kind")
 	errReflectNil       = errors.New("nil is not supported")
 	errReflectZero      = errors.New("zero is not supported")
+	errFieldCanSet      = errors.New("field can not be set")
 )
 
 func IterateFields(entity any) (map[string]any, error) {
@@ -43,4 +44,26 @@ func IterateFields(entity any) (map[string]any, error) {
 		}
 	}
 	return res, nil
+}
+
+func SetField(entity any, fieldName string, newVal any) error {
+	if entity == nil {
+		return errReflectNil
+	}
+	val := reflect.ValueOf(entity)
+	if val.IsZero() {
+		return errReflectZero
+	}
+	for val.Type().Kind() == reflect.Pointer {
+		val = val.Elem()
+	}
+	if val.Kind() != reflect.Struct {
+		return errNotSupportedKind
+	}
+	fieldVal := val.FieldByName(fieldName)
+	if fieldVal.IsZero() || !fieldVal.CanSet() {
+		return errFieldCanSet
+	}
+	fieldVal.Set(reflect.ValueOf(newVal))
+	return nil
 }

@@ -129,6 +129,88 @@ func TestIterateFields(t *testing.T) {
 	}
 }
 
+func TestSetField(t *testing.T) {
+	testCases := []struct {
+		name string
+
+		entity any
+		field  string
+		newVal any
+
+		wantEntity any
+		wantErr    error
+	}{
+		{
+			// 结构体存储在栈中，是unaddressable的
+			name: "struct",
+			entity: User{
+				Name: "Tom",
+			},
+			field:   "Name",
+			newVal:  "Jerry",
+			wantErr: errFieldCanSet,
+		},
+
+		{
+			name: "pointer",
+			entity: &User{
+				Name: "Tom",
+			},
+			field:  "Name",
+			newVal: "Jerry",
+			wantEntity: &User{
+				Name: "Jerry",
+			},
+		},
+
+		{
+			name: "pointer not exported",
+			entity: &User{
+				age: 18,
+			},
+			field:   "age",
+			newVal:  19,
+			wantErr: errFieldCanSet,
+		},
+		{
+			name:    "nil",
+			entity:  nil,
+			wantErr: errReflectNil,
+		},
+		{
+			name:    "nil with type",
+			entity:  (*User)(nil),
+			wantErr: errReflectZero,
+		},
+		{
+			name:    "not struct",
+			entity:  18,
+			wantErr: errNotSupportedKind,
+		},
+		{
+			name:    "not struct",
+			entity:  []int{1, 2, 3},
+			wantErr: errNotSupportedKind,
+		},
+		{
+			name:    "point to not struct",
+			entity:  &([]int{1, 2, 3}),
+			wantErr: errNotSupportedKind,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := SetField(tc.entity, tc.field, tc.newVal)
+			assert.Equal(t, tc.wantErr, err)
+			if err != nil {
+				return
+			}
+			assert.Equal(t, tc.wantEntity, tc.entity)
+		})
+	}
+}
+
 type User struct {
 	Name     string
 	age      int
