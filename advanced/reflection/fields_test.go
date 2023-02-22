@@ -210,9 +210,3 @@ func TestSetField(t *testing.T) {
 		})
 	}
 }
-
-type User struct {
-	Name     string
-	age      int
-	Birthday time.Time
-}
