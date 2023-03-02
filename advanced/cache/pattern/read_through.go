@@ -1,16 +1,17 @@
-package cache
+package pattern
 
 import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/gevinzone/lgthw/advanced/cache"
 	"sync"
 	"time"
 )
 
 // ReadThroughCache 获取数据时，如果缓存里没有，会自动去数据库捞数据，然后更新缓存
 type ReadThroughCache struct {
-	Cache
+	cache.Cache
 	mutex      sync.RWMutex
 	LoadFunc   func(ctx context.Context, key string) (any, error)
 	Expiration time.Duration
@@ -23,7 +24,7 @@ func (r *ReadThroughCache) Get(ctx context.Context, key string) (any, error) {
 	if err == nil {
 		return res, nil
 	}
-	if !errors.Is(err, errKeyNotFound) {
+	if !errors.Is(err, cache.ErrKeyNotFound) {
 		return nil, err
 	}
 	r.mutex.Lock()

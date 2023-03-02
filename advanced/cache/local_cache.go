@@ -9,16 +9,16 @@ import (
 )
 
 var (
-	errKeyNotFound = errors.New("cache：键不存在")
-	errKeyExpired  = errors.New("cache：键过期")
+	ErrKeyNotFound = errors.New("cache：键不存在")
+	ErrKeyExpired  = errors.New("cache：键过期")
 )
 
 func WrapErrKeyNotFound(key string) error {
-	return fmt.Errorf("%w, key is %s", errKeyNotFound, key)
+	return fmt.Errorf("%w, key is %s", ErrKeyNotFound, key)
 }
 
 func WrapErrKeyExpired(key string) error {
-	return fmt.Errorf("%w, key is %s", errKeyExpired, key)
+	return fmt.Errorf("%w, key is %s", ErrKeyExpired, key)
 }
 
 type BuildInCacheOption func(cache *BuildInCache)
