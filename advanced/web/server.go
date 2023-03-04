@@ -14,6 +14,7 @@ type Server interface {
 }
 
 type HttpServer struct {
+	router
 }
 
 var _ Server = &HttpServer{}
@@ -31,7 +32,7 @@ func (s *HttpServer) serve(ctx *Context) {
 }
 
 func (s *HttpServer) AddRoute(method, path string, handler HandleFunc) {
-
+	s.addRoute(method, path, handler)
 }
 
 func (s *HttpServer) Get(path string, handler HandleFunc) {
