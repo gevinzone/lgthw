@@ -10,7 +10,7 @@ type HandleFunc func(ctx *Context)
 type Server interface {
 	http.Handler
 	Start(addr string) error
-	AddRoute(method, path string, handler HandleFunc)
+	addRoute(method, path string, handler HandleFunc)
 }
 
 type HttpServer struct {
@@ -28,31 +28,33 @@ func (s *HttpServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *HttpServer) serve(ctx *Context) {
-	panic("implement me")
-}
-
-func (s *HttpServer) AddRoute(method, path string, handler HandleFunc) {
-	s.addRoute(method, path, handler)
+	n, ok := s.findRoute(ctx.Req.Method, ctx.Req.URL.Path)
+	if !ok || n.handleFunc == nil {
+		ctx.Resp.WriteHeader(http.StatusNotFound)
+		_, _ = ctx.Resp.Write([]byte("Not Found"))
+		return
+	}
+	n.handleFunc(ctx)
 }
 
 func (s *HttpServer) Get(path string, handler HandleFunc) {
-	s.AddRoute(http.MethodGet, path, handler)
+	s.addRoute(http.MethodGet, path, handler)
 }
 
 func (s *HttpServer) Post(path string, handler HandleFunc) {
-	s.AddRoute(http.MethodPost, path, handler)
+	s.addRoute(http.MethodPost, path, handler)
 }
 
 func (s *HttpServer) Put(path string, handler HandleFunc) {
-	s.AddRoute(http.MethodPut, path, handler)
+	s.addRoute(http.MethodPut, path, handler)
 }
 
 func (s *HttpServer) Patch(path string, handler HandleFunc) {
-	s.AddRoute(http.MethodPatch, path, handler)
+	s.addRoute(http.MethodPatch, path, handler)
 }
 
 func (s *HttpServer) Delete(path string, handler HandleFunc) {
-	s.AddRoute(http.MethodDelete, path, handler)
+	s.addRoute(http.MethodDelete, path, handler)
 }
 
 func (s *HttpServer) Start(addr string) error {

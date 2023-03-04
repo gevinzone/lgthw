@@ -50,3 +50,22 @@ func (r *router) validatePath(path string) {
 		panic("web: 路由不能以 / 结尾")
 	}
 }
+
+func (r *router) findRoute(method, path string) (*node, bool) {
+	root, ok := r.trees[method]
+	if !ok {
+		return nil, false
+	}
+	if path == "/" {
+		return root, true
+	}
+	segs := strings.Split(strings.Trim(path, "/"), "/")
+	n := root
+	for _, seg := range segs {
+		n, ok = n.getChild(seg)
+		if !ok {
+			return nil, false
+		}
+	}
+	return n, true
+}

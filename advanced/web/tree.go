@@ -17,3 +17,11 @@ func (n *node) getOrCreateChild(seg string) *node {
 	}
 	return child
 }
+
+func (n *node) getChild(seg string) (*node, bool) {
+	if n.children == nil {
+		return nil, false
+	}
+	child, ok := n.children[seg]
+	return child, ok
+}
