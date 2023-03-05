@@ -1,9 +1,9 @@
 package web
 
 type node struct {
-	path       string
-	children   map[string]*node
-	handleFunc HandleFunc
+	path     string
+	children map[string]*node
+	handler  HandleFunc
 }
 
 func (n *node) getOrCreateChild(seg string) *node {

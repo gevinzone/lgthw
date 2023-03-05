@@ -9,6 +9,12 @@ type router struct {
 	trees map[string]*node
 }
 
+func newRouter() router {
+	return router{
+		trees: map[string]*node{},
+	}
+}
+
 func (r *router) addRoute(method, path string, handler HandleFunc) {
 	r.validatePath(path)
 	root, ok := r.trees[method]
@@ -19,10 +25,10 @@ func (r *router) addRoute(method, path string, handler HandleFunc) {
 		r.trees[method] = root
 	}
 	if path == "/" {
-		if root.handleFunc != nil {
+		if root.handler != nil {
 			panic("web: 路由冲突 ")
 		}
-		root.handleFunc = handler
+		root.handler = handler
 		return
 	}
 	segs := strings.Split(path[1:], "/")
@@ -33,10 +39,10 @@ func (r *router) addRoute(method, path string, handler HandleFunc) {
 		}
 		n = n.getOrCreateChild(seg)
 	}
-	if n.handleFunc != nil {
+	if n.handler != nil {
 		panic("web: 路由冲突")
 	}
-	n.handleFunc = handler
+	n.handler = handler
 }
 
 func (r *router) validatePath(path string) {

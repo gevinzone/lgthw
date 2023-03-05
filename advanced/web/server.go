@@ -29,12 +29,12 @@ func (s *HttpServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func (s *HttpServer) serve(ctx *Context) {
 	n, ok := s.findRoute(ctx.Req.Method, ctx.Req.URL.Path)
-	if !ok || n.handleFunc == nil {
+	if !ok || n.handler == nil {
 		ctx.Resp.WriteHeader(http.StatusNotFound)
 		_, _ = ctx.Resp.Write([]byte("Not Found"))
 		return
 	}
-	n.handleFunc(ctx)
+	n.handler(ctx)
 }
 
 func (s *HttpServer) Get(path string, handler HandleFunc) {
