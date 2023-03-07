@@ -7,6 +7,7 @@ require (
 	github.com/go-redis/redis/v9 v9.0.0-rc.2
 	github.com/go-sql-driver/mysql v1.7.0
 	github.com/golang/mock v1.6.0
+	github.com/mattn/go-sqlite3 v1.14.16
 	github.com/prometheus/client_golang v1.14.0
 	github.com/stretchr/testify v1.8.1
 	golang.org/x/oauth2 v0.0.0-20220223155221-ee480838109b
