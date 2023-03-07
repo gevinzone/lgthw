@@ -156,20 +156,31 @@ func bz(db *sql.DB) (err error) {
 		return err
 	}
 
-	rows, err := db.QueryContext(context.Background(), "SELECT id, first_name from `table` WHERE code='user'")
+	tm, err := bz1(db)
 	if err != nil {
-		return err
+		return
 	}
 
+	return bz2(db, tm)
+}
+
+func bz1(db *sql.DB) (*TestModel, error) {
+	rows, err := db.QueryContext(context.Background(), "SELECT id, first_name from `table` WHERE code='user'")
+	if err != nil {
+		return nil, err
+	}
 	if !rows.Next() {
-		return errors.New("no row found")
+		return nil, errors.New("no row found")
 	}
 	tm := &TestModel{}
 	err = rows.Scan(&tm.Id, &tm.FirstName)
 	if err != nil {
-		return err
+		return nil, err
 	}
+	return tm, nil
+}
 
+func bz2(db *sql.DB, tm *TestModel) error {
 	res, err := db.ExecContext(context.Background(), fmt.Sprintf("INSERT INTO `test_model` (`id`, `first_name`) VALUES (%d, '%s')", tm.Id+1, tm.FirstName))
 	if err != nil {
 		return err
