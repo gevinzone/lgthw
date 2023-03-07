@@ -144,28 +144,31 @@ func TestSqlTransactionRollbackMock2(t *testing.T) {
 func bz(db *sql.DB) (err error) {
 	tx, err := db.Begin()
 	defer func() {
-		if err != nil {
-			er := tx.Rollback()
-			log.Println("roll back: ", er)
-			return
-		}
-		_ = tx.Commit()
+		commitOrRollback(tx, err)
 	}()
 
 	if err != nil {
 		return err
 	}
 
-	tm, err := bz1(db)
+	tm, err := bz1(tx)
 	if err != nil {
 		return
 	}
 
-	return bz2(db, tm)
+	return bz2(tx, tm)
 }
 
-func bz1(db *sql.DB) (*TestModel, error) {
-	rows, err := db.QueryContext(context.Background(), "SELECT id, first_name from `table` WHERE code='user'")
+func commitOrRollback(tx *sql.Tx, err error) {
+	if err != nil {
+		log.Println("roll back: ", tx.Rollback())
+		return
+	}
+	log.Println("commit ", tx.Commit())
+}
+
+func bz1(tx *sql.Tx) (*TestModel, error) {
+	rows, err := tx.QueryContext(context.Background(), "SELECT id, first_name from `table` WHERE code='user'")
 	if err != nil {
 		return nil, err
 	}
@@ -180,8 +183,8 @@ func bz1(db *sql.DB) (*TestModel, error) {
 	return tm, nil
 }
 
-func bz2(db *sql.DB, tm *TestModel) error {
-	res, err := db.ExecContext(context.Background(), fmt.Sprintf("INSERT INTO `test_model` (`id`, `first_name`) VALUES (%d, '%s')", tm.Id+1, tm.FirstName))
+func bz2(tx *sql.Tx, tm *TestModel) error {
+	res, err := tx.ExecContext(context.Background(), fmt.Sprintf("INSERT INTO `test_model` (`id`, `first_name`) VALUES (%d, '%s')", tm.Id+1, tm.FirstName))
 	if err != nil {
 		return err
 	}
