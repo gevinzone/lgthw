@@ -12,6 +12,8 @@ var (
 	errFieldCanSet      = errors.New("field can not be set")
 )
 
+// IterateFields 把结构体的字段，展开存储到map中，也支持操作指向结构体的指针
+// 如果结构体中的字段组合了其他结构体或指针，不再递归展开
 func IterateFields(entity any) (map[string]any, error) {
 	if entity == nil {
 		return nil, errReflectNil

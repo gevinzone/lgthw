@@ -116,6 +116,44 @@ func TestIterateFields(t *testing.T) {
 			},
 			wantErr: errNotSupportedKind,
 		},
+		{
+			name: "composition in struct",
+			entity: Person{
+				Id: 1,
+				User: User{
+					Name:     "Tom",
+					age:      18,
+					Birthday: time.Date(2000, 1, 1, 0, 0, 0, 0, time.Local),
+				},
+			},
+			wantVal: map[string]any{
+				"Id": 1,
+				"User": User{
+					Name:     "Tom",
+					age:      18,
+					Birthday: time.Date(2000, 1, 1, 0, 0, 0, 0, time.Local),
+				},
+			},
+		},
+		{
+			name: "composite pointer in struct",
+			entity: Actor{
+				Id: 1,
+				User: &User{
+					Name:     "Tom",
+					age:      18,
+					Birthday: time.Date(2000, 1, 1, 0, 0, 0, 0, time.Local),
+				},
+			},
+			wantVal: map[string]any{
+				"Id": 1,
+				"User": &User{
+					Name:     "Tom",
+					age:      18,
+					Birthday: time.Date(2000, 1, 1, 0, 0, 0, 0, time.Local),
+				},
+			},
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {

@@ -34,3 +34,13 @@ func (u *User) ChangeName(name string) *User {
 	u.Name = name
 	return u
 }
+
+type Person struct {
+	Id int
+	User
+}
+
+type Actor struct {
+	Id int
+	*User
+}
