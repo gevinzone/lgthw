@@ -58,6 +58,102 @@ func TestSqlMock(t *testing.T) {
 
 }
 
+func TestSqlMockWithCases(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = db.Close() }()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	testCases := []struct {
+		name           string
+		query          string
+		mockErr        error
+		mockReturnRows *sqlmock.Rows
+		wantErr        error
+		wantVal        TestModel
+	}{
+		{
+			name:  "get data",
+			query: "SELECT id, first_name from `table` WHERE code='user'",
+			mockReturnRows: func() *sqlmock.Rows {
+				mockRows := sqlmock.NewRows([]string{"id", "first_name"})
+				mockRows.AddRow(1, "Tom")
+				return mockRows
+			}(),
+			wantVal: TestModel{
+				Id:        1,
+				FirstName: "Tom",
+				Age:       0,
+				LastName:  nil,
+			},
+		},
+		{
+			name:  "get data 2",
+			query: "SELECT id, first_name from `table` WHERE code='user'",
+			mockReturnRows: func() *sqlmock.Rows {
+				mockRows := sqlmock.NewRows([]string{"id", "first_name"})
+				mockRows.AddRow(2, "Jerry")
+				return mockRows
+			}(),
+			wantVal: TestModel{
+				Id:        2,
+				FirstName: "Jerry",
+				Age:       0,
+				LastName:  nil,
+			},
+		},
+		{
+			name:    "query error",
+			query:   "SELECT id, first_name from `table` WHERE code='user'",
+			mockErr: errors.New("unexpected"),
+			wantVal: TestModel{
+				Id:        2,
+				FirstName: "Jerry",
+				Age:       0,
+				LastName:  nil,
+			},
+		},
+		{
+			name:  "no row",
+			query: "SELECT id, first_name from `table` WHERE code='user'",
+			mockReturnRows: func() *sqlmock.Rows {
+				mockRows := sqlmock.NewRows([]string{"id", "first_name"})
+				return mockRows
+			}(),
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			expectedQuery := mock.ExpectQuery("SELECT.*")
+			if tc.mockErr != nil {
+				expectedQuery.WillReturnError(tc.mockErr)
+			} else {
+				expectedQuery.WillReturnRows(tc.mockReturnRows)
+			}
+
+			rows, er := db.QueryContext(context.Background(), tc.query)
+			assert.Equal(t, tc.mockErr, er)
+			if er != nil {
+				return
+			}
+			if !rows.Next() {
+				return
+			}
+			tm := TestModel{}
+			er = rows.Scan(&tm.Id, &tm.FirstName)
+			assert.Equal(t, tc.wantErr, er)
+			if er != nil {
+				return
+			}
+			assert.Equal(t, tc.wantVal, tm)
+		})
+	}
+}
+
 func TestSqlInsertMock(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	defer db.Close()
