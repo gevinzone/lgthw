@@ -33,11 +33,7 @@ func (c *Client) Lock(ctx context.Context, key string, expiration, timeout time.
 			return nil, err
 		}
 		if res == "OK" {
-			return &Lock{
-				client: c.client,
-				key:    key,
-				value:  val,
-			}, nil
+			return NewLock(c.client, key, val, expiration), nil
 		}
 
 		// 开始重试
@@ -68,11 +64,7 @@ func (c *Client) TryLock(ctx context.Context, key string, expiration time.Durati
 	if !ok {
 		return nil, ErrFailedToPreemptLock
 	}
-	return &Lock{
-		client: c.client,
-		key:    key,
-		value:  val,
-	}, nil
+	return NewLock(c.client, key, val, expiration), nil
 }
 
 func (c *Client) createVal() string {

@@ -11,33 +11,82 @@ import (
 var (
 	ErrLockNotHold = errors.New("redis-lock: 你没有持有锁")
 
-	//
-	////go:embed lua/refresh.lua
-	//luaRefresh string
-	//
-	////go:embed lua/lock.lua
-	//luaLock string
+	//go:embed lua/refresh.lua
+	luaRefresh string
 
 	//go:embed lua/unlock.lua
 	luaUnlock string
 )
 
 type Lock struct {
-	client redis.Cmdable
-	key    string
-	value  string
+	client       redis.Cmdable
+	key          string
+	value        string
+	expiration   time.Duration
+	unlockSignal chan struct{}
+}
+
+func NewLock(client redis.Cmdable, key, value string, expiration time.Duration) *Lock {
+	return &Lock{
+		client:       client,
+		key:          key,
+		value:        value,
+		expiration:   expiration,
+		unlockSignal: make(chan struct{}, 1),
+	}
 }
 
 func (l *Lock) AutoRefresh(interval time.Duration, timeout time.Duration) error {
-	panic("implement me")
+	ticker := time.NewTicker(interval)
+	timeoutChan := make(chan struct{}, 1)
+	refresh := func() error {
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		err := l.Refresh(ctx)
+		cancel()
+		if err != nil && errors.Is(err, context.DeadlineExceeded) {
+			timeoutChan <- struct{}{}
+			return nil
+		}
+		return err
+	}
+	for {
+		select {
+		case <-ticker.C:
+			err := refresh()
+			if err != nil {
+				return err
+			}
+		case <-timeoutChan:
+			err := refresh()
+			if err != nil {
+				return err
+			}
+		case <-l.unlockSignal:
+			return nil
+		}
+	}
 }
 
 func (l *Lock) Refresh(ctx context.Context) error {
-	panic("implement me")
+	res, err := l.client.Eval(ctx, luaRefresh, []string{l.key}, l.value, l.expiration.Seconds()).Int64()
+	if err != nil {
+		return err
+	}
+	if res != 1 {
+		return ErrLockNotHold
+	}
+	return nil
 }
 
 func (l *Lock) Unlock(ctx context.Context) error {
 	res, err := l.client.Eval(ctx, luaUnlock, []string{l.key}, l.value).Int64()
+	defer func() {
+		select {
+		case l.unlockSignal <- struct{}{}:
+		default:
+
+		}
+	}()
 	if err != nil {
 		return err
 	}
