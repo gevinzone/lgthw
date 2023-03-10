@@ -9,8 +9,7 @@ import (
 )
 
 var (
-	ErrFailedToPreemptLock = errors.New("redis-lock: 抢锁失败")
-	ErrLockNotHold         = errors.New("redis-lock: 你没有持有锁")
+	ErrLockNotHold = errors.New("redis-lock: 你没有持有锁")
 
 	//
 	////go:embed lua/refresh.lua
