@@ -17,7 +17,19 @@ func (c *Client) Lock(ctx context.Context, key string, expiration, timeout time.
 }
 
 func (c *Client) TryLock(ctx context.Context, key string, expiration time.Duration) (*Lock, error) {
-	panic("implement me")
+	val := c.createVal()
+	ok, err := c.client.SetNX(ctx, key, val, expiration).Result()
+	if err != nil {
+		return nil, err
+	}
+	if !ok {
+		return nil, ErrFailedToPreemptLock
+	}
+	return &Lock{
+		client: c.client,
+		key:    key,
+		value:  val,
+	}, nil
 }
 
 func (c *Client) createVal() string {
