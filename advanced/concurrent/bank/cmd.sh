@@ -1,0 +1,1 @@
+go test -bench=^Benchmark -benchtime=10000x -benchmem .
