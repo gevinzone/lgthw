@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"github.com/go-redis/redis/v9"
 	"github.com/google/uuid"
+	"golang.org/x/sync/singleflight"
+	"sync"
 	"time"
 )
 
@@ -18,7 +20,13 @@ var (
 
 type Client struct {
 	client       redis.Cmdable
+	g            singleflight.Group
 	valGenerator func() string
+}
+
+// SingleFlightLock 用SingleFlight防止缓存击穿
+func (c *Client) SingleFlightLock(ctx context.Context, key string, expiration, timeout time.Duration, retry RetryStrategy) (*Lock, error) {
+	panic("implement me")
 }
 
 func (c *Client) Lock(ctx context.Context, key string, expiration, timeout time.Duration, retry RetryStrategy) (*Lock, error) {
@@ -72,4 +80,14 @@ func (c *Client) createVal() string {
 		return uuid.New().String()
 	}
 	return c.valGenerator()
+}
+
+type ClientV2 struct {
+	Client
+	mu sync.Mutex
+}
+
+// LockLock 用上锁方式防止缓存击穿
+func (c *ClientV2) LockLock(ctx context.Context, key string, expiration, timeout time.Duration, retry RetryStrategy) (*Lock, error) {
+	panic("implement me")
 }
