@@ -2,6 +2,7 @@ package article_votes
 
 import (
 	"context"
+	"errors"
 	"github.com/go-redis/redis/v9"
 	"strconv"
 	"time"
@@ -79,7 +80,7 @@ func (a *ArticleRepo) PostArticle(user, title, link string) (string, error) {
 	a.conn.SAdd(context.Background(), votedKey, user)
 	a.conn.Expire(context.Background(), votedKey, time.Second*OneWeekInSeconds)
 
-	a.conn.HSet(context.Background(), articleKey, article)
+	a.conn.Set(context.Background(), articleKey, article, redis.KeepTTL)
 
 	a.conn.ZAdd(context.Background(), scoreKey, redis.Z{
 		Score:  float64(now.Unix() + VoteScore),
@@ -92,22 +93,42 @@ func (a *ArticleRepo) PostArticle(user, title, link string) (string, error) {
 	return articleId, nil
 }
 
+func (a *ArticleRepo) GetArticle(key string) (Article, error) {
+	article := Article{}
+	err := a.conn.Get(context.Background(), key).Scan(&article)
+	return article, err
+}
+
 func (a *ArticleRepo) GetArticles(page, size int64, order string) ([]Article, error) {
-	panic("implement me")
-	//if order != "score" {
-	//	order = "time"
-	//}
-	//start := (page - 1) * size
-	//end := page*size - 1
-	//articleKeys, err := a.conn.ZRange(context.Background(), order, start, end).Result()
-	//if err != nil {
-	//	return nil, err
-	//}
-	//articles := make([]Article, 0, len(articleKeys))
+	if order != "score" {
+		order = "time"
+	}
+	start := (page - 1) * size
+	end := page*size - 1
+	articleKeys, err := a.conn.ZRange(context.Background(), order, start, end).Result()
+	if err != nil {
+		return nil, err
+	}
+	articles := make([]Article, 0, len(articleKeys))
 	//for _, articleKey := range articleKeys {
-	//	a.conn.HGet()
-	//	articles = append(articles)
+	//	article := Article{}
+	//	err = a.conn.Get(context.Background(), articleKey).Scan(&article)
+	//	if err != nil {
+	//		return nil, err
+	//	}
+	//	articles = append(articles, article)
 	//}
+
+	res, err := a.conn.MGet(context.Background(), articleKeys...).Result()
+	for _, r := range res {
+		d, ok := r.(Article)
+		if !ok {
+			return nil, errors.New("store error")
+		}
+		articles = append(articles, d)
+	}
+
+	return articles, nil
 
 }
 
