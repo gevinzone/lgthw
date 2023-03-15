@@ -10,9 +10,8 @@ import (
 )
 
 const (
-	OneWeekInSeconds       = 7 * 3600 * 24
-	VoteScore              = 432
-	ArticlesPerPage  int64 = 25
+	OneWeekInSeconds = 7 * 3600 * 24
+	VoteScore        = 432
 )
 
 var (
@@ -27,9 +26,9 @@ var (
 type ArticleCmd interface {
 	ArticleVote(articleKey, user string) error
 	PostArticle(user, title, link string) (string, error)
+	GetArticle(key string) (Article, error)
 	GetArticles(page, size int64, order string) ([]Article, error)
 	AddRemoveGroups(articleId string, toAdd, toRemove []string) error
-	GetGroupArticles(group, order string, page int64) ([]Article, error)
 	Reset()
 }
 
@@ -179,31 +178,24 @@ func (a *ArticleRepo) GetArticles(page, size int64, order string) ([]Article, er
 
 func (a *ArticleRepo) AddRemoveGroups(articleId string, toAdd, toRemove []string) error {
 	articleKey := articleKeyPrefix + articleId
-
-	agent := func(list []string, key string,
-		f func(ctx context.Context, key string, members ...any) *redis.IntCmd) error {
-		ctx := context.Background()
-		for _, group := range list {
-			groupKey := groupPrefix + group
-			err := f(ctx, groupKey, key).Err()
-			if err != nil {
-				return err
-			}
-		}
-		return nil
-	}
-
-	err := agent(toAdd, articleKey, a.conn.SAdd)
+	err := addRemoveProxy(toAdd, articleKey, a.conn.SAdd)
 	if err != nil {
 		return err
 	}
 
-	return agent(toRemove, articleKey, a.conn.SRem)
+	return addRemoveProxy(toRemove, articleKey, a.conn.SRem)
 }
 
-func (a *ArticleRepo) GetGroupArticles(group, order string, page int64) ([]Article, error) {
-	//TODO implement me
-	panic("implement me")
+func addRemoveProxy(list []string, key string, f func(ctx context.Context, key string, members ...any) *redis.IntCmd) error {
+	ctx := context.Background()
+	for _, group := range list {
+		groupKey := groupPrefix + group
+		err := f(ctx, groupKey, key).Err()
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (a *ArticleRepo) Reset() {
