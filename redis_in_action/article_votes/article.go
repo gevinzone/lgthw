@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/go-redis/redis/v9"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -23,7 +24,7 @@ var (
 )
 
 type ArticleCmd interface {
-	ArticleVote(article, user string)
+	ArticleVote(articleKey, user string) error
 	PostArticle(user, title, link string) (string, error)
 	GetArticles(page, size int64, order string) ([]Article, error)
 	AddRemoveGroups(articleId string, toAdd, toRemove []string)
@@ -53,11 +54,30 @@ var _ ArticleCmd = &ArticleRepo{}
 
 // ArticleVote 给文章投票
 // 投票逻辑为：
-// 1.
-//
-func (a *ArticleRepo) ArticleVote(article, user string) {
-	//TODO implement me
-	panic("implement me")
+// 1. 判断文章是否为1周前发表
+// 2. 检查当前用户是否投过票
+// 3. 投票+1
+func (a *ArticleRepo) ArticleVote(articleKey, user string) error {
+	postedAt, err := a.conn.ZScore(context.Background(), timeKey, articleKey).Result()
+	if err != nil {
+		return err
+	}
+	cutoff := time.Now().Unix() - OneWeekInSeconds
+	if postedAt < float64(cutoff) {
+		return errors.New("article is posted one week ago")
+	}
+	articleId := strings.Split(articleKey, ":")[1]
+	votedKey := votedKeyPrefix + articleId
+	var res int64
+	if res, err = a.conn.SAdd(context.Background(), votedKey, user).Result(); err != nil {
+		return err
+	}
+	if res == 0 {
+		return errors.New("voted repeatably")
+	}
+	a.conn.ZIncrBy(context.Background(), scoreKey, VoteScore, articleKey)
+	a.conn.IncrBy(context.Background(), articleKey, 1)
+	return nil
 }
 
 func (a *ArticleRepo) PostArticle(user, title, link string) (string, error) {
