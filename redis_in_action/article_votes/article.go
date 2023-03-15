@@ -21,13 +21,14 @@ var (
 	timeKey          = "time"
 	articleKeyPrefix = "article:"
 	votedKeyPrefix   = "voted:"
+	groupPrefix      = "group:"
 )
 
 type ArticleCmd interface {
 	ArticleVote(articleKey, user string) error
 	PostArticle(user, title, link string) (string, error)
 	GetArticles(page, size int64, order string) ([]Article, error)
-	AddRemoveGroups(articleId string, toAdd, toRemove []string)
+	AddRemoveGroups(articleId string, toAdd, toRemove []string) error
 	GetGroupArticles(group, order string, page int64) ([]Article, error)
 	Reset()
 }
@@ -58,6 +59,20 @@ var _ ArticleCmd = &ArticleRepo{}
 // 2. 检查当前用户是否投过票
 // 3. 投票+1
 func (a *ArticleRepo) ArticleVote(articleKey, user string) error {
+	err := a.checkArticleVotable(articleKey)
+	if err != nil {
+		return err
+	}
+
+	articleId := strings.Split(articleKey, ":")[1]
+	err = a.checkArticleRepeatableVote(articleId, user)
+	if err != nil {
+		return err
+	}
+
+	return a.vote(articleId)
+}
+func (a *ArticleRepo) checkArticleVotable(articleKey string) error {
 	postedAt, err := a.conn.ZScore(context.Background(), timeKey, articleKey).Result()
 	if err != nil {
 		return err
@@ -66,18 +81,28 @@ func (a *ArticleRepo) ArticleVote(articleKey, user string) error {
 	if postedAt < float64(cutoff) {
 		return errors.New("article is posted one week ago")
 	}
-	articleId := strings.Split(articleKey, ":")[1]
+	return nil
+}
+
+func (a *ArticleRepo) checkArticleRepeatableVote(articleId, user string) error {
 	votedKey := votedKeyPrefix + articleId
-	var res int64
-	if res, err = a.conn.SAdd(context.Background(), votedKey, user).Result(); err != nil {
+	res, err := a.conn.SAdd(context.Background(), votedKey, user).Result()
+	if err != nil {
 		return err
 	}
 	if res == 0 {
 		return errors.New("voted repeatably")
 	}
-	a.conn.ZIncrBy(context.Background(), scoreKey, VoteScore, articleKey)
-	a.conn.IncrBy(context.Background(), articleKey, 1)
 	return nil
+}
+
+func (a *ArticleRepo) vote(articleId string) error {
+	articleKey := articleKeyPrefix + articleId
+	err := a.conn.ZIncrBy(context.Background(), scoreKey, VoteScore, articleKey).Err()
+	if err != nil {
+		return err
+	}
+	return a.conn.IncrBy(context.Background(), articleKey, 1).Err()
 }
 
 func (a *ArticleRepo) PostArticle(user, title, link string) (string, error) {
@@ -152,9 +177,28 @@ func (a *ArticleRepo) GetArticles(page, size int64, order string) ([]Article, er
 
 }
 
-func (a *ArticleRepo) AddRemoveGroups(articleId string, toAdd, toRemove []string) {
-	//TODO implement me
-	panic("implement me")
+func (a *ArticleRepo) AddRemoveGroups(articleId string, toAdd, toRemove []string) error {
+	articleKey := articleKeyPrefix + articleId
+
+	agent := func(list []string, key string,
+		f func(ctx context.Context, key string, members ...any) *redis.IntCmd) error {
+		ctx := context.Background()
+		for _, group := range list {
+			groupKey := groupPrefix + group
+			err := f(ctx, groupKey, key).Err()
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+
+	err := agent(toAdd, articleKey, a.conn.SAdd)
+	if err != nil {
+		return err
+	}
+
+	return agent(toRemove, articleKey, a.conn.SRem)
 }
 
 func (a *ArticleRepo) GetGroupArticles(group, order string, page int64) ([]Article, error) {
