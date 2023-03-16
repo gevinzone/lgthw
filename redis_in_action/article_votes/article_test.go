@@ -13,8 +13,16 @@ func TestArticleRepo_PostArticle(t *testing.T) {
 	client := redisClient(t)
 	repo := ArticleRepo{conn: client}
 	user, title, link := "user", "title", "link"
-	_, err := repo.PostArticle(user, title, link)
+	articleId, err := repo.PostArticle(user, title, link)
 	assert.NoError(t, err)
+
+	votedKey := votedKeyPrefix + articleId
+	articleKey := articleKeyPrefix + articleId
+	assert.Equal(t, int64(0), client.SAdd(context.Background(), votedKey, user).Val())
+	res, err := client.ZScore(context.Background(), scoreKey, articleKey).Result()
+	require.NoError(t, err)
+	require.Less(t, float64(0), res)
+	require.NoError(t, client.ZScore(context.Background(), timeKey, articleKey).Err())
 }
 
 func TestArticleRepo_GetArticle(t *testing.T) {
