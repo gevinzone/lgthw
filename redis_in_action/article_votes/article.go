@@ -28,7 +28,7 @@ var (
 type ArticleCmd interface {
 	ArticleVote(articleKey, user string) error
 	PostArticle(user, title, link string) (string, error)
-	GetArticle(key string) (Article, error)
+	GetArticle(id string) (Article, error)
 	GetArticles(page, size int64, order string) ([]Article, error)
 	AddRemoveGroups(articleId string, toAdd, toRemove []string) error
 	Reset() error
@@ -47,8 +47,8 @@ func (a Article) MarshalBinary() ([]byte, error) {
 	return json.Marshal(a)
 }
 
-func (a Article) UnmarshalBinary(data []byte) error {
-	return json.Unmarshal(data, &a)
+func (a *Article) UnmarshalBinary(data []byte) error {
+	return json.Unmarshal(data, a)
 }
 
 // ArticleRepo 文章仓库，其存储设计为：
@@ -158,9 +158,11 @@ func (a *ArticleRepo) PostArticle(user, title, link string) (string, error) {
 	return articleId, nil
 }
 
-func (a *ArticleRepo) GetArticle(key string) (Article, error) {
+func (a *ArticleRepo) GetArticle(id string) (Article, error) {
 	article := Article{}
+	key := articleKeyPrefix + id
 	err := a.conn.Get(context.Background(), key).Scan(&article)
+	//err := a.conn.Get(context.Background(), key).Result()
 	return article, err
 }
 
