@@ -2,7 +2,9 @@ package article_votes
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/go-redis/redis/v9"
 	"strconv"
 	"strings"
@@ -15,7 +17,7 @@ const (
 )
 
 var (
-	idKey            = "article:"
+	idKey            = "articleId"
 	scoreKey         = "score"
 	timeKey          = "time"
 	articleKeyPrefix = "article:"
@@ -29,7 +31,7 @@ type ArticleCmd interface {
 	GetArticle(key string) (Article, error)
 	GetArticles(page, size int64, order string) ([]Article, error)
 	AddRemoveGroups(articleId string, toAdd, toRemove []string) error
-	Reset()
+	Reset() error
 }
 
 type Article struct {
@@ -38,7 +40,15 @@ type Article struct {
 	Link       string
 	Author     string
 	CreateTime time.Time
-	Votes      int64
+	//Votes      int64
+}
+
+func (a Article) MarshalBinary() ([]byte, error) {
+	return json.Marshal(a)
+}
+
+func (a Article) UnmarshalBinary(data []byte) error {
+	return json.Unmarshal(data, &a)
 }
 
 // ArticleRepo 文章仓库，其存储设计为：
@@ -117,23 +127,34 @@ func (a *ArticleRepo) PostArticle(user, title, link string) (string, error) {
 		Link:       link,
 		Author:     user,
 		CreateTime: now,
-		Votes:      1,
+		//Votes:      1,
 	}
 	articleKey := articleKeyPrefix + articleId
 	votedKey := votedKeyPrefix + articleId
 	a.conn.SAdd(context.Background(), votedKey, user)
 	a.conn.Expire(context.Background(), votedKey, time.Second*OneWeekInSeconds)
 
-	a.conn.Set(context.Background(), articleKey, article, redis.KeepTTL)
+	a.conn.Set(context.Background(), articleKey, fmt.Sprintf("%v", article), redis.KeepTTL)
+	_, err = a.conn.Set(context.Background(), articleKey, article, redis.KeepTTL).Result()
+	if err != nil {
+		return articleId, err
+	}
 
-	a.conn.ZAdd(context.Background(), scoreKey, redis.Z{
+	_, err = a.conn.ZAdd(context.Background(), scoreKey, redis.Z{
 		Score:  float64(now.Unix() + VoteScore),
 		Member: articleKey,
-	})
-	a.conn.ZAdd(context.Background(), timeKey, redis.Z{
+	}).Result()
+	if err != nil {
+		return articleId, err
+	}
+
+	_, err = a.conn.ZAdd(context.Background(), timeKey, redis.Z{
 		Score:  float64(now.Unix()),
 		Member: articleKey,
-	})
+	}).Result()
+	if err != nil {
+		return articleId, err
+	}
 	return articleId, nil
 }
 
@@ -198,6 +219,6 @@ func addRemoveProxy(list []string, key string, f func(ctx context.Context, key s
 	return nil
 }
 
-func (a *ArticleRepo) Reset() {
-	a.conn.FlushDB(context.Background())
+func (a *ArticleRepo) Reset() error {
+	return a.conn.FlushDB(context.Background()).Err()
 }
