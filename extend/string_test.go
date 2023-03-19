@@ -60,3 +60,9 @@ func TestReverseString(t *testing.T) {
 	}
 
 }
+
+func TestCreateRandomString(t *testing.T) {
+	l := 6
+	t.Log(CreateRandomString(l))
+	t.Log(CreateRandomStringV2(l))
+}
