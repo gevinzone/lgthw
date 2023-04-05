@@ -1,84 +1,70 @@
-package main
+package v1
 
 import (
 	"fmt"
-	"hash/fnv"
+	"hash/crc32"
 	"sort"
+	"sync"
 )
 
-type HashFunc func([]byte) uint32
-
 type ConsistentHash struct {
-	hashFunc HashFunc
-	hashRing []uint32
-	nodes    map[uint32]string // 节点对应其哈希值
-	replicas int               // 虚拟节点数
+	nodes       map[uint32]string // 节点哈希值与节点名称的映射
+	circle      []uint32          // 哈希环
+	virtualNode int               // 虚拟节点倍数
+	mutex       sync.RWMutex      // 读写锁
 }
 
-// 创建一致性哈希对象
-func NewConsistentHash(replicas int, hashFunc HashFunc) *ConsistentHash {
-	if hashFunc == nil {
-		hashFunc = Hash
-	}
+// NewConsistentHash 创建 ConsistentHash 实例
+func NewConsistentHash() *ConsistentHash {
 	return &ConsistentHash{
-		hashFunc: hashFunc,
-		nodes:    make(map[uint32]string),
-		replicas: replicas,
+		nodes:       make(map[uint32]string),
+		virtualNode: 20,
 	}
 }
 
-// 添加节点
+// AddNode 添加节点
 func (c *ConsistentHash) AddNode(node string) {
-	for i := 0; i < c.replicas; i++ {
-		hash := c.hashFunc([]byte(fmt.Sprintf("%s-%d", node, i)))
-		c.hashRing = append(c.hashRing, hash)
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
+	for i := 0; i < c.virtualNode; i++ {
+		hash := crc32.ChecksumIEEE([]byte(fmt.Sprintf("%s%d", node, i)))
+		c.circle = append(c.circle, hash)
 		c.nodes[hash] = node
 	}
-	sort.Slice(c.hashRing, func(i, j int) bool { return c.hashRing[i] < c.hashRing[j] }) // 对哈希环进行排序
+	sort.Slice(c.circle, func(i, j int) bool { return c.circle[i] < c.circle[j] })
 }
 
-// 移除节点
+// RemoveNode 删除节点
 func (c *ConsistentHash) RemoveNode(node string) {
-	for i := 0; i < c.replicas; i++ {
-		hash := c.hashFunc([]byte(fmt.Sprintf("%s-%d", node, i)))
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
+	for i := 0; i < c.virtualNode; i++ {
+		hash := crc32.ChecksumIEEE([]byte(fmt.Sprintf("%s%d", node, i)))
 		delete(c.nodes, hash)
-		for j, val := range c.hashRing {
-			if val == hash {
-				c.hashRing = append(c.hashRing[:j], c.hashRing[j+1:]...)
+		for j := 0; j < len(c.circle); j++ {
+			if c.circle[j] == hash {
+				c.circle = append(c.circle[:j], c.circle[j+1:]...)
 				break
 			}
 		}
 	}
 }
 
-// 获取下一个节点
+// GetNode 获取节点
 func (c *ConsistentHash) GetNode(key string) string {
-	if len(c.hashRing) == 0 {
+	c.mutex.RLock()
+	defer c.mutex.RUnlock()
+
+	if len(c.circle) == 0 {
 		return ""
 	}
-	hash := c.hashFunc([]byte(key))
-	idx := sort.Search(len(c.hashRing), func(i int) bool { return c.hashRing[i] >= hash })
-	if idx == len(c.hashRing) {
+
+	hash := crc32.ChecksumIEEE([]byte(key))
+	idx := sort.Search(len(c.circle), func(i int) bool { return c.circle[i] >= hash })
+	if idx == len(c.circle) {
 		idx = 0
 	}
-	return c.nodes[c.hashRing[idx]]
-}
-
-// 使用FNV算法计算哈希值
-func Hash(data []byte) uint32 {
-	h := fnv.New32a()
-	h.Write(data)
-	return h.Sum32()
-}
-
-func main() {
-	ch := NewConsistentHash(3, nil)
-	ch.AddNode("server1")
-	ch.AddNode("server2")
-	ch.AddNode("server3")
-	fmt.Println(ch.GetNode("key1"))
-	fmt.Println(ch.GetNode("key2"))
-	ch.RemoveNode("server2")
-	fmt.Println(ch.GetNode("key1"))
-	fmt.Println(ch.GetNode("key2"))
+	return c.nodes[c.circle[idx]]
 }

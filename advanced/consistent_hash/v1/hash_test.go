@@ -1,4 +1,4 @@
-package chash
+package v1
 
 import (
 	"fmt"
@@ -7,14 +7,14 @@ import (
 )
 
 func TestConsistentHash(t *testing.T) {
-	ch := NewConsistentHash(WithReplica(10))
+	ch := NewConsistentHash()
 
 	ch.AddNode("node1")
 	ch.AddNode("node2")
 	ch.AddNode("node3")
 
 	//打印哈希环上所有虚拟节点和真实节点的对应关系
-	for k, v := range ch.keys {
+	for k, v := range ch.circle {
 		t.Logf("虚拟节点哈希值：%d，节点：%d\n", k, v)
 	}
 
@@ -27,7 +27,7 @@ func TestConsistentHash(t *testing.T) {
 
 	//打印删除一个节点后，哈希环上所有虚拟节点和真实节点的对应关系
 	fmt.Println("删掉一个节点后的虚拟节点和真实节点的对应关系：")
-	for k, v := range ch.keys {
+	for k, v := range ch.circle {
 		t.Logf("虚拟节点哈希值：%d，节点：%d\n", k, v)
 	}
 
