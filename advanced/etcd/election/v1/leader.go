@@ -63,6 +63,6 @@ func (e *EtcdLeader) GetLeader(ctx context.Context) (string, error) {
 }
 
 func (e *EtcdLeader) Close() error {
-	e.session.Close()
+	_ = e.session.Close()
 	return e.client.Close()
 }

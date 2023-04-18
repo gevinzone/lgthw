@@ -1,8 +1,8 @@
-package leader
+package election
 
 import (
 	"context"
-	clientv3 "go.etcd.io/etcd/client/v3"
+	clientV3 "go.etcd.io/etcd/client/v3"
 )
 
 type LeaderElection interface {
@@ -14,7 +14,7 @@ type LeaderElection interface {
 // etcdLeaderElection is a struct that implements the LeaderElection interface
 // using etcd as the backend for leader election.
 type etcdLeaderElection struct {
-	clientv3 *clientv3.Client
+	client   *clientV3.Client
 	key      string
 	id       string
 	ttl      int
@@ -22,9 +22,9 @@ type etcdLeaderElection struct {
 }
 
 // NewEtcdLeaderElection creates a new instance of etcdLeaderElection.
-func NewEtcdLeaderElection(client *clientv3.Client, key, id string, ttl int) LeaderElection {
+func NewEtcdLeaderElection(client *clientV3.Client, key, id string, ttl int) LeaderElection {
 	return &etcdLeaderElection{
-		clientv3: client,
+		client:   client,
 		key:      key,
 		id:       id,
 		ttl:      ttl,
@@ -34,17 +34,17 @@ func NewEtcdLeaderElection(client *clientv3.Client, key, id string, ttl int) Lea
 
 // Campaign starts a new leader election campaign.
 func (e *etcdLeaderElection) Campaign(ctx context.Context) error {
-	lease, err := e.clientv3.Grant(ctx, int64(e.ttl))
+	lease, err := e.client.Grant(ctx, int64(e.ttl))
 	if err != nil {
 		return err
 	}
 
-	_, err = e.clientv3.Put(ctx, e.key, e.id, clientv3.WithLease(lease.ID))
+	_, err = e.client.Put(ctx, e.key, e.id, clientV3.WithLease(lease.ID))
 	if err != nil {
 		return err
 	}
 
-	keepAliveChan, err := e.clientv3.KeepAlive(ctx, lease.ID)
+	keepAliveChan, err := e.client.KeepAlive(ctx, lease.ID)
 	if err != nil {
 		return err
 	}
@@ -69,7 +69,7 @@ func (e *etcdLeaderElection) Campaign(ctx context.Context) error {
 func (e *etcdLeaderElection) Resign(ctx context.Context) error {
 	close(e.stopChan)
 
-	_, err := e.clientv3.Delete(ctx, e.key)
+	_, err := e.client.Delete(ctx, e.key)
 	if err != nil {
 		return err
 	}
@@ -79,7 +79,7 @@ func (e *etcdLeaderElection) Resign(ctx context.Context) error {
 
 // IsLeader returns true if the current instance is the leader.
 func (e *etcdLeaderElection) IsLeader(ctx context.Context) (bool, error) {
-	resp, err := e.clientv3.Get(ctx, e.key)
+	resp, err := e.client.Get(ctx, e.key)
 	if err != nil {
 		return false, err
 	}
