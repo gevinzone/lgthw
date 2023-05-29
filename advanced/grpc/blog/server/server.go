@@ -34,23 +34,21 @@ func (b *BlogServer) Start(address string) error {
 
 func (b *BlogServer) GetArticle(ctx context.Context, id *gen.Id) (*gen.Blog, error) {
 	blog := b.admin.GetBlog(id.GetId())
-	return blog.ToBlog(), nil
+	return blog, nil
 }
 func (b *BlogServer) CreateArticle(ctx context.Context, r *gen.BlogRequest) (*gen.Blog, error) {
-	p := blogger.NewBlogRequest(blogger.WithRpcBlogRequest(r))
-	blog, err := b.admin.CreateBlog(p)
+	blog, err := b.admin.CreateBlog(r)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
-	return blog.ToBlog(), nil
+	return blog, nil
 }
 func (b *BlogServer) UpdateArticle(ctx context.Context, r *gen.BlogRequest) (*gen.Blog, error) {
-	p := blogger.NewBlogRequest(blogger.WithRpcBlogRequest(r))
-	blog, err := b.admin.UpdateBlog(p)
+	blog, err := b.admin.UpdateBlog(r)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
-	return blog.ToBlog(), nil
+	return blog, nil
 }
 func (b *BlogServer) DeleteArticle(ctx context.Context, id *gen.Id) (*gen.Response, error) {
 	err := b.admin.DeleteBlog(id.GetId())

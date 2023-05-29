@@ -29,11 +29,12 @@ message BlogRequest {
 
 message Blog {
   int64 id = 1;
-//  string title = 2;
-//  string content = 3;
-//  optional string content_html = 4;
-//  string author = 5;
-  BlogRequest blog = 2;
+  string title = 2;
+  string content = 3;
+  optional string content_html = 4;
+  string author = 5;
+  optional string slug = 8;
+  repeated string tags = 9;
   google.protobuf.Timestamp createTime = 6;
   google.protobuf.Timestamp updateTime = 7;
 }
