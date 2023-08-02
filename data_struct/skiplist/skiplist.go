@@ -14,7 +14,12 @@
 
 package skiplist
 
-const maxLevel = 32
+import "math/rand"
+
+const (
+	maxLevel = 32
+	branch   = 4
+)
 
 // SkipList 是一个跳表，层高为levelCount, 自底向上为第0层、1层…… levelCount-1 层
 // 第0层是跳表全部数据，排成一个有序链表，之上逐层创建了索引，以加速0层链表的crud，整个跳表可以视为一个索引
@@ -50,16 +55,63 @@ func (s *SkipList) Find(val int) *Node {
 	}
 }
 
+func (s *SkipList) Insert(val int) {
+	level := randomLevel()
+	node := newNode(withVal(val), withLevel(level))
+	// 存储每层索引的前置节点
+	update := make([]*Node, level)
+	p := s.head
+	for i := level - 1; i >= 0; i-- {
+		for p.forward[i] != nil && p.forward[i].val < val {
+			p = p.forward[i]
+		}
+		update[i] = p
+	}
+	for i := 0; i < level; i++ {
+		node.forward[i] = update[i].forward[i]
+		update[i].forward[i] = node
+	}
+	if s.levelCount < level {
+		s.levelCount = level
+	}
+}
+
 type Node struct {
 	val       int
 	forward   []*Node
 	nMaxLevel int
 }
 
-func newNode() *Node {
-	return &Node{
+type nodeOption func(n *Node)
+
+func newNode(opts ...nodeOption) *Node {
+	n := &Node{
 		val:       -1,
 		forward:   make([]*Node, maxLevel),
 		nMaxLevel: 0,
 	}
+	for _, opt := range opts {
+		opt(n)
+	}
+	return n
+}
+
+func withVal(val int) nodeOption {
+	return func(n *Node) {
+		n.val = val
+	}
+}
+
+func withLevel(level int) nodeOption {
+	return func(n *Node) {
+		n.nMaxLevel = level
+	}
+}
+
+func randomLevel() int {
+	level := 1
+	for level < maxLevel && (rand.Int31()&0xFFFF)%branch == 0 {
+		level += 1
+	}
+	return level
 }
