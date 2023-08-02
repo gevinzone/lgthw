@@ -60,6 +60,9 @@ func (s *SkipList) Insert(val int) {
 	node := newNode(withVal(val), withLevel(level))
 	// 存储每层索引的前置节点
 	update := make([]*Node, level)
+	//for i := 0; i < level; i++ {
+	//	update = append(update, s.head)
+	//}
 	p := s.head
 	for i := level - 1; i >= 0; i-- {
 		for p.forward[i] != nil && p.forward[i].val < val {
@@ -76,9 +79,32 @@ func (s *SkipList) Insert(val int) {
 	}
 }
 
+func (s *SkipList) Delete(val int) {
+	update := make([]*Node, s.levelCount)
+	p := s.head
+	for i := s.levelCount - 1; i >= 0; i-- {
+		for p.forward[i] != nil && p.forward[i].val < val {
+			p = p.forward[i]
+		}
+		update[i] = p
+	}
+	if p.forward[0] == nil || p.forward[0].val != val {
+		return
+	}
+	for i := s.levelCount - 1; i >= 0; i-- {
+		if update[i].forward[i] != nil && update[i].forward[i].val == val {
+			update[i].forward[i] = update[i].forward[i].forward[i]
+		}
+	}
+	for s.levelCount > 1 && s.head.forward[s.levelCount] == nil {
+		s.levelCount--
+	}
+
+}
+
 type Node struct {
 	val       int
-	forward   []*Node
+	forward   []*Node // 存储该节点在每层索引上的后继节点
 	nMaxLevel int
 }
 
