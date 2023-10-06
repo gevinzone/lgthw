@@ -16,7 +16,7 @@ package ioc
 
 import (
 	"github.com/gevinzone/basic-go/live/webook/config"
-	"github.com/gevinzone/basic-go/live/webook/internal/repository/dao"
+	"github.com/gevinzone/lgthw/advanced/webook/internal/repository/dao"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )

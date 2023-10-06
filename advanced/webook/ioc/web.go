@@ -15,9 +15,9 @@
 package ioc
 
 import (
-	"github.com/gevinzone/basic-go/live/webook/internal/web"
-	"github.com/gevinzone/basic-go/live/webook/internal/web/middleware"
 	"github.com/gevinzone/basic-go/live/webook/pkg/ginx/middlewares/ratelimit"
+	"github.com/gevinzone/lgthw/advanced/webook/internal/web"
+	"github.com/gevinzone/lgthw/advanced/webook/internal/web/middleware"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/memstore"

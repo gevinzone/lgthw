@@ -17,12 +17,12 @@
 package main
 
 import (
-	"github.com/gevinzone/basic-go/live/webook/internal/repository"
-	"github.com/gevinzone/basic-go/live/webook/internal/repository/cache"
-	"github.com/gevinzone/basic-go/live/webook/internal/repository/dao"
-	"github.com/gevinzone/basic-go/live/webook/internal/service"
-	"github.com/gevinzone/basic-go/live/webook/internal/web"
-	"github.com/gevinzone/basic-go/live/webook/ioc"
+	"github.com/gevinzone/lgthw/advanced/webook/internal/repository"
+	"github.com/gevinzone/lgthw/advanced/webook/internal/repository/cache"
+	"github.com/gevinzone/lgthw/advanced/webook/internal/repository/dao"
+	"github.com/gevinzone/lgthw/advanced/webook/internal/service"
+	"github.com/gevinzone/lgthw/advanced/webook/internal/web"
+	"github.com/gevinzone/lgthw/advanced/webook/ioc"
 	"github.com/gin-gonic/gin"
 	"github.com/google/wire"
 )

@@ -2,7 +2,7 @@ package repository
 
 import (
 	"context"
-	"github.com/gevinzone/basic-go/live/webook/internal/repository/cache"
+	"github.com/gevinzone/lgthw/advanced/webook/internal/repository/cache"
 )
 
 var (

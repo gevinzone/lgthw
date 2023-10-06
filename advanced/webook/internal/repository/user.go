@@ -17,9 +17,9 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"github.com/gevinzone/basic-go/live/webook/internal/domain"
-	"github.com/gevinzone/basic-go/live/webook/internal/repository/cache"
-	"github.com/gevinzone/basic-go/live/webook/internal/repository/dao"
+	"github.com/gevinzone/lgthw/advanced/webook/internal/domain"
+	"github.com/gevinzone/lgthw/advanced/webook/internal/repository/cache"
+	"github.com/gevinzone/lgthw/advanced/webook/internal/repository/dao"
 	"time"
 )
 

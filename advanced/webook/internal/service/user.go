@@ -17,8 +17,8 @@ package service
 import (
 	"context"
 	"errors"
-	"github.com/gevinzone/basic-go/live/webook/internal/domain"
-	"github.com/gevinzone/basic-go/live/webook/internal/repository"
+	"github.com/gevinzone/lgthw/advanced/webook/internal/domain"
+	"github.com/gevinzone/lgthw/advanced/webook/internal/repository"
 	"golang.org/x/crypto/bcrypt"
 )
 

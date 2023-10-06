@@ -17,8 +17,8 @@ package web
 import (
 	"errors"
 	regexp "github.com/dlclark/regexp2"
-	"github.com/gevinzone/basic-go/live/webook/internal/domain"
-	"github.com/gevinzone/basic-go/live/webook/internal/service"
+	"github.com/gevinzone/lgthw/advanced/webook/internal/domain"
+	"github.com/gevinzone/lgthw/advanced/webook/internal/service"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"

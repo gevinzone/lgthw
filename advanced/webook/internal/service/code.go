@@ -3,8 +3,8 @@ package service
 import (
 	"context"
 	"fmt"
-	"github.com/gevinzone/basic-go/live/webook/internal/repository"
-	"github.com/gevinzone/basic-go/live/webook/internal/service/sms"
+	"github.com/gevinzone/lgthw/advanced/webook/internal/repository"
+	"github.com/gevinzone/lgthw/advanced/webook/internal/service/sms"
 	"math/rand"
 )
 

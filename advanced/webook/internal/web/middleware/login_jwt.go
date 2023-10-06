@@ -16,7 +16,7 @@ package middleware
 
 import (
 	"encoding/gob"
-	"github.com/gevinzone/basic-go/live/webook/internal/web"
+	"github.com/gevinzone/lgthw/advanced/webook/internal/web"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"log"

@@ -15,8 +15,8 @@
 package ioc
 
 import (
-	"github.com/gevinzone/basic-go/live/webook/internal/service/sms"
-	"github.com/gevinzone/basic-go/live/webook/internal/service/sms/memory"
+	"github.com/gevinzone/lgthw/advanced/webook/internal/service/sms"
+	"github.com/gevinzone/lgthw/advanced/webook/internal/service/sms/memory"
 )
 
 func InitSmsService() sms.Service {
