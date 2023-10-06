@@ -15,7 +15,11 @@
 package main
 
 import (
+	"fmt"
+	"github.com/fsnotify/fsnotify"
 	"github.com/gin-gonic/gin"
+	"github.com/spf13/pflag"
+	"github.com/spf13/viper"
 	"net/http"
 )
 
@@ -27,10 +31,28 @@ func main() {
 	//u.RegisterRoutes(server)
 	//server := gin.Default()
 
+	initViper()
 	server := InitWebServer()
 	server.GET("/hello", func(ctx *gin.Context) {
 		ctx.String(http.StatusOK, "你好，你来了")
 	})
 
 	server.Run(":8080")
+}
+
+func initViper() {
+	cfile := pflag.String("config", "config/dev.yaml",
+		"指定配置文件路径")
+	pflag.Parse()
+	viper.SetConfigFile(*cfile)
+	viper.WatchConfig()
+	viper.OnConfigChange(func(in fsnotify.Event) {
+		fmt.Println(in.Name, in.Op)
+		fmt.Println(viper.GetString("db.dsn"))
+		fmt.Println(viper.GetString("abc"))
+	})
+	err := viper.ReadInConfig()
+	if err != nil {
+		panic(err)
+	}
 }

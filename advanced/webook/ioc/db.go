@@ -15,14 +15,22 @@
 package ioc
 
 import (
-	"github.com/gevinzone/basic-go/live/webook/config"
 	"github.com/gevinzone/lgthw/advanced/webook/internal/repository/dao"
+	"github.com/spf13/viper"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
 func InitDB() *gorm.DB {
-	db, err := gorm.Open(mysql.Open(config.Config.DB.DSN))
+	type Config struct {
+		Dsn string `yaml:"dsn"`
+	}
+	cfg := Config{Dsn: "root:root@tcp(localhost:3306)/webook_default"}
+	err := viper.UnmarshalKey("db", &cfg)
+	if err != nil {
+		panic(err)
+	}
+	db, err := gorm.Open(mysql.Open(cfg.Dsn))
 	if err != nil {
 		panic(err)
 	}
