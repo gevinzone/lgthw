@@ -45,11 +45,9 @@ func initViper() {
 		"指定配置文件路径")
 	pflag.Parse()
 	viper.SetConfigFile(*cfile)
-	viper.WatchConfig()
 	viper.OnConfigChange(func(in fsnotify.Event) {
 		fmt.Println(in.Name, in.Op)
 		fmt.Println(viper.GetString("db.dsn"))
-		fmt.Println(viper.GetString("abc"))
 	})
 	err := viper.ReadInConfig()
 	if err != nil {
