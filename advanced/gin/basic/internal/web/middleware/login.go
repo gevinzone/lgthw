@@ -12,34 +12,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package basic
+package middleware
 
 import (
-	"github.com/gevinzone/lgthw/advanced/gin/basic/internal/service/basic"
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
-type HelloHandler struct {
-	svc basic.Hello
+type LoginMiddlewareBuilder struct {
 }
 
-func NewHelloHandler(svc basic.Hello) *HelloHandler {
-	return &HelloHandler{
-		svc: svc,
+func (m *LoginMiddlewareBuilder) CheckLogin() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		path := ctx.Request.URL.Path
+		if path == "/users/signup" || path == "/users/login" {
+			// 不需要登录校验
+			return
+		}
+		sess := sessions.Default(ctx)
+		if sess.Get("userId") == nil {
+			// 中断，不要往后执行，也就是不要执行后面的业务逻辑
+			ctx.AbortWithStatus(http.StatusUnauthorized)
+			return
+		}
 	}
-}
-
-func (h *HelloHandler) RegisterRoutes(server *gin.Engine) {
-	g := server.Group("/hello")
-	g.GET("/hello", h.Hello)
-	g.GET("/hello2", h.Hello2)
-}
-
-func (h *HelloHandler) Hello(ctx *gin.Context) {
-	ctx.String(http.StatusOK, "Hello World")
-}
-
-func (h *HelloHandler) Hello2(ctx *gin.Context) {
-	h.svc.Hello(ctx)
 }
