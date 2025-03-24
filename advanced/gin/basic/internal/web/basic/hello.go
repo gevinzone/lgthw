@@ -12,27 +12,34 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package hello
+package basic
 
 import (
+	"github.com/gevinzone/lgthw/advanced/gin/basic/internal/service/basic"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
 type HelloHandler struct {
+	svc basic.Hello
 }
 
-func NewHelloHandler() *HelloHandler {
-	return &HelloHandler{}
+func NewHelloHandler(svc basic.Hello) *HelloHandler {
+	return &HelloHandler{
+		svc: svc,
+	}
 }
 
 func (h *HelloHandler) RegisterRoutes(server *gin.Engine) {
 	g := server.Group("/hello")
 	g.GET("/hello", h.Hello)
+	g.GET("/hello2", h.Hello2)
 }
 
 func (h *HelloHandler) Hello(ctx *gin.Context) {
-	ctx.JSON(http.StatusOK, map[string]string{
-		"msg": "hello, world!",
-	})
+	ctx.JSON(http.StatusOK, "Hello World")
+}
+
+func (h *HelloHandler) Hello2(ctx *gin.Context) {
+	h.svc.Hello(ctx)
 }

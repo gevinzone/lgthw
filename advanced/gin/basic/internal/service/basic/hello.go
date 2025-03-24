@@ -12,21 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package basic
 
 import (
-	svc "github.com/gevinzone/lgthw/advanced/gin/basic/internal/service/basic"
-	"github.com/gevinzone/lgthw/advanced/gin/basic/internal/web/basic"
 	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
-func main() {
-	server := gin.Default()
-	helloSvc := svc.NewHelloService()
-	helloHandler := basic.NewHelloHandler(helloSvc)
-	helloHandler.RegisterRoutes(server)
-	err := server.Run(":8080")
-	if err != nil {
-		panic(err)
-	}
+type HelloService struct{}
+
+func NewHelloService() *HelloService {
+	return &HelloService{}
+}
+
+func (h *HelloService) Hello(ctx *gin.Context) {
+	ctx.JSON(http.StatusOK, map[string]interface{}{
+		"msg": "hello, world!",
+	})
 }
